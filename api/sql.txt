@@ -1,0 +1,95 @@
+User connection->
+SELECT mail, password, admin
+FROM Users
+WHERE mail = "$mailFront";
+
+
+Update connecition mail->
+UPDATE Users SET mail="$mail";
+
+
+Update connecition password->
+UPDATE Users SET password="$password";
+
+
+Update connecition statut>
+UPDATE Users SET statut="0||1";
+
+
+Create Compagnies->//statut à 0
+INSERT INTO `infocompanies`(`siren`, `typeCompanies`, `phone`, `logo`, `banniere`, `urlWebsite`, `headquartersCity`, `headquartersRegion`, `headquartersCountry`, `nbrEmployees`, `yearOfFoundation`) VALUES ("siren","pme","029I9292","","","","Paris","Ile de France","France",1000,"2000/09/02");
+
+INSERT INTO `accountrh`(`levelInCompanies`) VALUES (0);
+INSERT INTO `socialnetworks`(`linkdin`, `facebook`, `instagram`, `twitter`, `youtube`) VALUES ("linkdin", "facebook", "instagram", "twitter", "youtube");
+
+INSERT INTO companies (name, statut, description, Id_InfoCompanies, Id_AccountRH, Id_SocialNetworks) 
+VALUES ("$name4", 1, "$description", 
+        (SELECT max(Id_InfoCompanies) FROM infocompanies), 
+        (SELECT max(Id_AccountRH) FROM accountrh),
+        (SELECT max(Id_SocialNetworks) FROM socialnetworks));
+
+
+Create Users->
+INSERT INTO InfoUsersSearchJob (userName, firstName, adress, country, avatar, phone) VALUES ("userName", "firstName", "adress", "country", "avatar", "phone");
+INSERT INTO Users (mail, password, Id_InfoUsersSearchJob)VALUES(mail, password, (SELECT LAST_INSERT_ID() FROM InfoUsersSearchJob LIMIT 1));
+
+
+Select offer->
+SELECT C.name, C.description, O.name, O.description, job, typeContract, city, region, country, offeredSalary, dayPost
+FROM companies natural join offer;
+
+
+Create Offer->
+INSERT INTO offer (`name`,`description`,`job`,`typeContract`,`city`,`region`,`country`,`offeredSalary`,`dayPost`)
+VALUES ("name","description","job","typeContract","city","region","country","offeredSalary","2000/09/20");
+
+UPDATE companies
+SET Id_Offer = (SELECT LAST_INSERT_ID() FROM offer LIMIT 1)
+
+
+Select Pour recruter compagnie des users qui follow une offre->
+SELECT userName, firstName, adress, country, avatar, phone, interested
+FROM InfoUsersSearchJob natural join ApplicationOffer
+WHERE intersted > 0
+
+
+Update/insert Pour follow l'offre ou la deffolow->
+SELECT * FROM `applicationoffer` WHERE `Id_InfoUsersSearchJob`="idUser";
+INSERT INTO `applicationoffer`(`interested`, `Id_InfoUsersSearchJob`) VALUES (1,2)
+UPDATE `applicationoffer` SET interested ="0||1";
+
+
+Select si la compagnie accepte le follow client->
+SELECT * FROM `applicationoffer` WHERE `Id_InfoUsersSearchJob`="idUser";
+UPDATE `applicationoffer` SET interested ="2||1", `Id_Offer` = "idOffer" WHERE interested <0;
+
+
+Select USER POUR savoir si offre accepte->
+SELECT * FROM `applicationoffer` WHERE `Id_InfoUsersSearchJob`="idUser";
+
+
+Delete une offre->
+//get en js l'id des infos
+SELECT `companieshaveoffer` FROM `users` WHERE Id_offer="id";
+DELETE FROM `companieshaveoffer`WHERE Id_offer="id"
+DELETE FROM `offer` WHERE `Id_Offer` = "id";
+
+
+Cloturer un compte User->
+//get en js l'id des infos
+SELECT `Id_InfoUsersSearchJob` FROM `users` WHERE `Id_Users`="id";
+DELETE FROM `users` WHERE `Id_Users`="id";
+DELETE FROM `infouserssearchjob` WHERE idGet= "id";
+
+
+Cloturer un compte RH->
+DELETE FROM accountrh WHERE Id_AccountRH = "id";
+
+
+Accepter une companie->
+UPDATE `companies` SET `statut`=1;
+
+
+Cloturer une companie->
+UPDATE `companies` SET `statut`=1;
+DELETE FROM `offer` WHERE `Id_Offer` set (SELECT...
